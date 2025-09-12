@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>隨機歌單生成器</title>
+  <style>
+    body {
+      font-family: "Microsoft JhengHei", sans-serif;
+      background: #f4f4f9;
+      padding: 20px;
+      text-align: center;
+    }
+    h1 {
+      color: #333;
+    }
+    button {
+      background: #4CAF50;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      margin: 10px;
+      font-size: 16px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #45a049;
+    }
+    ol, p {
+      text-align: left;
+      display: inline-block;
+      margin-top: 20px;
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+    #randomSong {
+      font-weight: bold;
+      font-size: 18px;
+      color: #e91e63;
+    }
+  </style>
+</head>
+<body>
+  <h1>🎶 隨機歌單生成器 🎶</h1>
+  <button onclick="shuffleSongs()">生成隨機歌單</button>
+  <button onclick="pickOneSong()">隨機抽一首歌</button>
+  <div>
+    <p id="randomSong"></p>
+  </div>
+  <ol id="playlist"></ol>
+
+  <script>
+    const songs = [
+      "特別的人", "受協", "嘉賓", "那女孩對我說", "如果愛忘了", "多幸運", "最後一頁",
+      "下一個天亮", "十年", "我知道", "間距", "一個人想着一個人", "小美滿", "心牆",
+      "我只能離開", "指紋", "夏夜最後的煙火", "嗨好", "和你", "七里香", "小幸運",
+      "南山南", "愛的回歸線", "把回憶拼好給你", "我落淚情緒零碎", "靜悄悄"
+    ];
+
+    function shuffleSongs() {
+      let shuffled = [...songs]
+        .sort(() => Math.random() - 0.5);
+
+      const playlistEl = document.getElementById("playlist");
+      playlistEl.innerHTML = "";
+      shuffled.forEach((song) => {
+        const li = document.createElement("li");
+        li.textContent = song;
+        playlistEl.appendChild(li);
+      });
+    }
+
+    function pickOneSong() {
+      const randomIndex = Math.floor(Math.random() * songs.length);
+      const song = songs[randomIndex];
+      document.getElementById("randomSong").textContent = "🎵 今天抽到的歌是：「" + song + "」";
+    }
+  </script>
+</body>
+</html>
