@@ -3,81 +3,233 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>隨機歌單生成器</title>
+  <title>主播歌曲隨機器</title>
   <style>
-    body {
-      font-family: "Microsoft JhengHei", sans-serif;
-      background: #f4f4f9;
-      padding: 20px;
-      text-align: center;
-    }
-    h1 {
-      color: #333;
-    }
-    button {
-      background: #4CAF50;
-      color: white;
-      border: none;
-      padding: 10px 20px;
-      margin: 10px;
-      font-size: 16px;
-      border-radius: 8px;
-      cursor: pointer;
-    }
-    button:hover {
-      background: #45a049;
-    }
-    ol, p {
-      text-align: left;
-      display: inline-block;
-      margin-top: 20px;
-      background: white;
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-    }
-    #randomSong {
-      font-weight: bold;
-      font-size: 18px;
-      color: #e91e63;
-    }
+    body { font-family: "Microsoft JhengHei", sans-serif; background: #f4f4f9; padding: 20px; }
+    .container { max-width: 950px; margin: 0 auto; text-align: center; }
+    h1 { color: #333; }
+    .controls { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 12px; }
+    select, input[type="text"], button, textarea { padding: 10px; border-radius: 8px; border: 1px solid #ddd; font-size: 14px; }
+    button { background: #4CAF50; color: white; border: none; cursor: pointer; }
+    button:hover { background: #45a049; }
+    .box { background: white; padding: 18px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.12); margin-top: 18px; text-align: left; }
+    #playlist { margin-top: 10px; }
+    #randomSong { font-weight: bold; font-size: 18px; color: #e91e63; margin: 10px 0; }
+    .small { font-size: 13px; color: #666; }
   </style>
 </head>
 <body>
-  <h1>🎶 隨機歌單生成器 🎶</h1>
-  <button onclick="shuffleSongs()">生成隨機歌單</button>
-  <button onclick="pickOneSong()">隨機抽一首歌</button>
-  <div>
-    <p id="randomSong"></p>
+  <div class="container">
+    <h1>🎶 主播歌曲隨機器 🎶</h1>
+
+    <div class="controls">
+      <label>
+        選擇主播：
+        <select id="anchorSelect"></select>
+      </label>
+      <input type="text" id="anchorSearch" placeholder="搜尋主播名稱" />
+      <button id="shuffleBtn">生成隨機歌單</button>
+      <button id="pickOneBtn">隨機抽一首歌</button>
+    </div>
+
+    <div class="box">
+      <div id="randomSong"></div>
+      <h3>歌單內容</h3>
+      <ol id="playlist"></ol>
+    </div>
+
+    <div class="box">
+      <h3>搜尋歌曲在哪些主播歌單</h3>
+      <input id="searchInput" type="text" placeholder="輸入歌名（按Enter或點搜尋）" />
+      <button id="searchBtn">搜尋</button>
+      <ul id="searchResults"></ul>
+    </div>
+    <div class="box">
+     <p>2025-10-01版本</p>
+    </div>
+    <div class="box" >
+  <h3>歌單管理(!!測試中!!)</h3>
+  <p>目前是本地"網頁檔案"管理，不會影響其他用戶使用</p>
+  <p>可以使用看看，需修改歌單請發私信給tu.en~</p>
+  <p class="small">選擇主播，輸入要新增或刪除的歌曲（多首以空格區隔）。</p>
+  <label>選擇主播： <select id="manageAnchor"></select></label><br><br>
+  <input id="manageSongs" type="text" placeholder="輸入歌曲名稱，以空格分隔" style="width:60%" />
+  <button id="addSongsBtn">新增歌曲</button>
+  <button id="removeSongsBtn">刪除歌曲</button>
+
+  
+</div>
+
+
+
   </div>
-  <ol id="playlist"></ol>
 
   <script>
-    const songs = [
-      "特別的人", "受協", "嘉賓", "那女孩對我說", "如果愛忘了", "多幸運", "最後一頁",
-      "下一個天亮", "十年", "我知道", "間距", "一個人想着一個人", "小美滿", "心牆",
-      "我只能離開", "指紋", "夏夜最後的煙火", "嗨好", "和你", "七里香", "小幸運",
-      "南山南", "愛的回歸線", "把回憶拼好給你", "我落淚情緒零碎", "靜悄悄"
-    ];
+    // 主播歌單資料
+    const anchors = {
+      "請選擇主播名": [
+      ],
+      "小韓": [
+        "特別的人", "受協", "嘉賓", "那女孩對我說", "如果愛忘了", "多幸運", "最後一頁",
+        "下一個天亮", "十年", "我知道", "間距", "一個人想着一個人", "小美滿", "心牆",
+        "我只能離開", "指紋", "夏夜最後的煙火", "嗜好", "和你", "七里香", "小幸運",
+        "南山南", "愛的回歸線", "把回憶拼好給你", "我落淚情緒零碎", "靜悄悄"
+      ],
+      "子明.🍪": [
+        "多幸運", "愛就一個字", "老男孩", "春泥", "愛錯", "特別的人", "淘汰", "演員",
+        "成都", "江南", "黃昏", "可不可以", "戒煙", "南山南", "不將就", "過火", "在你的身邊",
+        "十年", "我想念", "我們倆", "一次就好", "無名的人", "五十年以後", "我們的明天",
+        "稻香", "暖一杯茶", "座位", "愛一個人好難", "千金散盡"
+      ],
+      "森果": [
+        "太傻", "最后的人", "慢冷", "Dear john", "寂寞才说爱", "特别的人", "再见",
+        "麻雀", "爱就一个字", "需要人陪", "戒烟", "春泥", "此生不换", "十年",
+        "遇见", "好久不见", "成都", "平凡之路", "没那么简单", "你不知道的事",
+        "不将就", "女孩", "南山南", "达尔文", "唯一", "永不失联的爱"
+      ],
+      "小凱": [
+        "花海","你是我的风景","沦陷","我们的歌","像我这样的人","老男孩","水星记","平凡之路",
+        "你还要我怎样","爱我还是他","第五十七次取消发送","最后一页","丑八怪","妈妈的话","可不可以",
+        "多远都要在一起","我是如此相信","无名的人","凄美地","美人鱼","爱错","无人之岛","演员","偏爱","指纹","再见",
+      ],
+       "李棕衡": [
+        "吃语","青花瓷","在你的身边","不将就","七里香","告白气球","那女孩对我说","爱情转移",
+        "他不懂","下一个天亮","小镇姑娘","她说","陪你度过漫长岁月","大城小爱","消愁","特别的人",
+        "戒烟","稻香","成都","平凡之路","小幸运","春泥","漂洋过海来看你","年轮","十年","一次就好",
+        "暖一杯茶","嘉宾","背对背拥抱江南","江南","艳火","那些你很冒险的梦","陷阱",
+      ],
+    };
 
-    function shuffleSongs() {
-      let shuffled = [...songs]
-        .sort(() => Math.random() - 0.5);
+    const anchorSelect = document.getElementById('anchorSelect');
+    const manageAnchor = document.getElementById('manageAnchor');
+    const playlistEl = document.getElementById('playlist');
+    const randomSongEl = document.getElementById('randomSong');
+    const searchInput = document.getElementById('searchInput');
+    const searchResults = document.getElementById('searchResults');
+    const anchorSearch = document.getElementById('anchorSearch');
 
-      const playlistEl = document.getElementById("playlist");
-      playlistEl.innerHTML = "";
-      shuffled.forEach((song) => {
-        const li = document.createElement("li");
+    function refreshAnchorSelects() {
+      [anchorSelect, manageAnchor].forEach(select => {
+        select.innerHTML = '';
+        Object.keys(anchors).forEach(name => {
+          const opt = document.createElement('option');
+          opt.value = name;
+          opt.textContent = name;
+          select.appendChild(opt);
+        });
+      });
+    }
+
+    function renderPlaylist() {
+      const name = anchorSelect.value;
+      const list = anchors[name] || [];
+      playlistEl.innerHTML = '';
+      list.forEach(song => {
+        const li = document.createElement('li');
         li.textContent = song;
         playlistEl.appendChild(li);
       });
     }
 
-    function pickOneSong() {
-      const randomIndex = Math.floor(Math.random() * songs.length);
-      const song = songs[randomIndex];
-      document.getElementById("randomSong").textContent = "🎵 今天抽到的歌是：「" + song + "」";
+    function shuffleArray(arr) {
+      const a = [...arr];
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
     }
+
+    function shuffleSongs() {
+      const list = anchors[anchorSelect.value] || [];
+      const shuffled = shuffleArray(list);
+      playlistEl.innerHTML = '';
+      shuffled.forEach(song => {
+        const li = document.createElement('li');
+        li.textContent = song;
+        playlistEl.appendChild(li);
+      });
+      randomSongEl.textContent = '';
+    }
+
+    function pickOneSong() {
+      const list = anchors[anchorSelect.value] || [];
+      if (!list.length) { randomSongEl.textContent = '目前歌單沒有歌曲。'; return; }
+      const song = list[Math.floor(Math.random() * list.length)];
+      randomSongEl.textContent = '🎵 抽到的歌是：「' + song + '」';
+    }
+
+    function searchSong() {
+      const q = searchInput.value.trim();
+      if (!q) { searchResults.innerHTML = '<li>請輸入歌名</li>'; return; }
+      const results = [];
+      Object.keys(anchors).forEach(name => {
+        anchors[name].forEach(song => {
+          if (song.includes(q)) {
+            results.push({ song, anchor: name });
+          }
+        });
+      });
+      if (!results.length) {
+        searchResults.innerHTML = '<li>找不到符合的歌曲</li>';
+      } else {
+        searchResults.innerHTML = '';
+        results.forEach(r => {
+          const li = document.createElement('li');
+          li.textContent = r.song + ' — 在 ' + r.anchor;
+          searchResults.appendChild(li);
+        });
+      }
+    }
+
+    function addSongs() {
+      const name = manageAnchor.value;
+      const input = document.getElementById('manageSongs').value.trim();
+      if (!input) { alert('請輸入歌曲'); return; }
+      const songs = input.split(/\s+/);
+      songs.forEach(song => {
+        if (!anchors[name].includes(song)) {
+          anchors[name].push(song);
+        }
+      });
+      renderPlaylist();
+      alert('已新增歌曲到 ' + name);
+    }
+
+    function removeSongs() {
+      const name = manageAnchor.value;
+      const input = document.getElementById('manageSongs').value.trim();
+      if (!input) { alert('請輸入歌曲'); return; }
+      const songs = input.split(/\s+/);
+      anchors[name] = anchors[name].filter(song => !songs.includes(song));
+      renderPlaylist();
+      alert('已刪除歌曲從 ' + name);
+    }
+
+    // 主播搜尋功能
+    anchorSearch.addEventListener('input', () => {
+      const q = anchorSearch.value.trim();
+      if (!q) return;
+      const found = Object.keys(anchors).find(name => name.includes(q));
+      if (found) {
+        anchorSelect.value = found;
+        renderPlaylist();
+      }
+    });
+
+    // 綁定事件
+    document.getElementById('shuffleBtn').addEventListener('click', shuffleSongs);
+    document.getElementById('pickOneBtn').addEventListener('click', pickOneSong);
+    document.getElementById('searchBtn').addEventListener('click', searchSong);
+    searchInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') searchSong(); });
+    document.getElementById('addSongsBtn').addEventListener('click', addSongs);
+    document.getElementById('removeSongsBtn').addEventListener('click', removeSongs);
+
+    // 初始化
+    refreshAnchorSelects();
+    anchorSelect.addEventListener('change', renderPlaylist);
+    anchorSelect.selectedIndex = 0;
+    renderPlaylist();
   </script>
 </body>
 </html>
